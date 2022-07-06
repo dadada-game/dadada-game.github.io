@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .contest {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .contestTitle {
+      font-size: 10em;
+      align-items: center;
+    }
+
+    .cardMatch {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .vs {
+      font-size: 5em;
+
+    }
+
+    .card {
+      cursor:pointer;
+    }
+  </style>
+
+  <script src="/static/lib/ramda.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script type="module" src="./ranking.js"></script>
+</head>
+<body>
+  <div class="contest">
+    <div id="contest-title" class="contestTitle">
+      loading contest...
+    </div>
+    <div class="cardMatch">
+      <div id="card1" class="card">
+        <img id="card1-img" src="/static/img/cards/0.png">
+      </div>
+      <div class="vs">
+        vs
+      </div>
+      <div id="card2" class="card">
+        <img id="card2-img" src="/static/img/cards/0.png">
+      </div>
+    </div>
+  </div>
+</body>
+</html>

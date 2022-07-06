@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="mystyle.css">
+    <script type="module">
+      const sounds = [
+        "da", "bip", "diff", "ooo"
+      ]
+      const $dadada = document.getElementById("dadada")
+
+      function createSound() {
+        const $sound = document.createElement("span")
+        $sound.classList.toggle("sound", true)
+        $sound.addEventListener("mouseenter", () => {
+          const s = sounds.filter(s => s !== $sound.innerHTML)
+          s.sort((_, __) => Math.random() - 0.5)
+          $sound.innerHTML = s[0]
+        })
+        $sound.innerHTML = "da"
+        $dadada.appendChild($sound)
+      }
+
+      for(let i =0; i< 420; i++) {
+        createSound()
+      }
+    </script>
+    <style>
+      @font-face {
+        font-family: ebgaramond;
+        src: url(/static/fonts/EB_Garamond/EBGaramond-VariableFont_wght.ttf);
+      }
+
+      body {
+        overflow-y: hidden;
+      }
+
+      .dadada {
+        line-break: anywhere;
+        overflow-y: hidden;
+      }
+
+      .sound {
+        font-family: ebgaramond;
+        font-size: 5em;
+        transition: color 2s;
+      }
+
+      .sound:hover {
+        animation-name: fadecolor;
+        animation-duration: 10s;
+        color: red;
+        transition: color 0s;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="dadada" id="dadada">
+    </div>
+  </body>
+</html>
