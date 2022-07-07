@@ -1,8 +1,6 @@
 import { rating, rate, ordinal } from '/static/lib/openskill.js/index.js'
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
-import { collection, getFirestore, getDocs, doc, getDoc  } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
-
-
+import { collection, getFirestore, getDocs, doc, updateDoc, addDoc,setDoc  } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
 
 const firebaseConfig = {
 
@@ -46,8 +44,7 @@ class Contest {
     this.title = title
     this.cardRanks = cardRanks.map(rank => (
         {
-          //card: await getDoc(rank.card).data(),
-          id: rank.card,
+          id: rank.id,
           rating: rank.rating
         }))
   }
@@ -75,7 +72,7 @@ class Contest {
         const filteredRanks = m.cardRanks
           .filter(c => except.find(e => e.id === c.id) == null) // don't repeat them
         filteredRanks.sort((a, b) => b.rating.sigma - a.rating.sigma)
-        console.log("sort!", filteredRanks)
+        //console.log("sort!", filteredRanks)
         if(except.length > 0) id = filteredRanks[Math.floor(Math.random() * filteredRanks.length)].id
         else {
 
@@ -99,7 +96,7 @@ class Contest {
     const card1 = GetBestCard();
     const card2 = GetBestCard([card1])
 
-    console.log("picked new cards!", card1, card2)
+   // console.log("picked new cards!", card1, card2)
     return [card1, card2]
   }
 
@@ -111,6 +108,8 @@ class Contest {
 
     this.updateOrCreateCard(winner, newWinnerRating)
     this.updateOrCreateCard(loser, newLoserRating)
+
+    UpdateContest(this)
   }
 
   getCardRating(card) {
@@ -126,80 +125,74 @@ class Contest {
     const id = card.id
     const rankedCard = this.cardRanks.find(c => c.id === id);
     if (rankedCard != null) {
-      // update existing card
       console.log("updating card", id, card)
       rankedCard.rating = rating
-
-      // update on firebase
     } else {
       const newCard = {
         id, rating
       }
       this.cardRanks.push(newCard)
-
       console.log("adding card", id, card)
-
-      // create on firebase
     }
   }
 
 }
 
-const mockCards = [
-  {
-    id: 1,
-    img: "/static/img/cards/1.png",
-  },
-  {
-    id: 2,
-    img: "/static/img/cards/2.png",
-  },
-  {
-    id: 3,
-    img: "/static/img/cards/3.png"
-  },
-  {
-    id: 4,
-    img: "/static/img/cards/4.png"
-  },
-  {
-    id: 5,
-    img: "/static/img/cards/5.png"
-  },
-  {
-    id: 6,
-    img: "/static/img/cards/6.png"
-  },
-  {
-    id: 7,
-    img: "/static/img/cards/7.png"
-  },
-  {
-    id: 8,
-    img: "/static/img/cards/8.png"
-  },
-  {
-    id: 9,
-    img: "/static/img/cards/9.png"
-  },
-  {
-    id: "cvZzlH7RJ5jI4azr9riG",
-    img: "/static/img/cards/10.png"
-  },
-]
+// const mockCards = [
+//   {
+//     id: 1,
+//     img: "/static/img/cards/1.png",
+//   },
+//   {
+//     id: 2,
+//     img: "/static/img/cards/2.png",
+//   },
+//   {
+//     id: 3,
+//     img: "/static/img/cards/3.png"
+//   },
+//   {
+//     id: 4,
+//     img: "/static/img/cards/4.png"
+//   },
+//   {
+//     id: 5,
+//     img: "/static/img/cards/5.png"
+//   },
+//   {
+//     id: 6,
+//     img: "/static/img/cards/6.png"
+//   },
+//   {
+//     id: 7,
+//     img: "/static/img/cards/7.png"
+//   },
+//   {
+//     id: 8,
+//     img: "/static/img/cards/8.png"
+//   },
+//   {
+//     id: 9,
+//     img: "/static/img/cards/9.png"
+//   },
+//   {
+//     id: "cvZzlH7RJ5jI4azr9riG",
+//     img: "/static/img/cards/10.png"
+//   },
+// ]
 
-const mockCardRanks = [
-  {
-    card: 1,
-    rating: { mu: 20.963, sigma: 8.084 },
-  },
-  {
-    card: 2,
-    rating: { mu: 27.795, sigma: 8.263 },
-  }
-]
+// const mockCardRanks = [
+//   {
+//     id: 1,
+//     rating: { mu: 20.963, sigma: 8.084 },
+//   },
+//   {
+//     id: 2,
+//     rating: { mu: 27.795, sigma: 8.263 },
+//   }
+// ]
 
-const mockContest = new Contest(69, "the nicest card", mockCardRanks)
+// const mockContest = new Contest(69, "the nicest card", mockCardRanks)
 
 
 // Actual execution of stuff
@@ -208,6 +201,13 @@ let card2 = null
 let contest = null
 
 const $contestTitle = document.getElementById("contest-title");
+
+// const $btn = document.getElementById("debugButton");
+// const $txt = document.getElementById("text");
+// $btn.addEventListener("click", () => {
+//   CreateCard($txt.value)
+// })
+
 
 const $card1 = document.getElementById("card1");
 const $card1Img = document.getElementById("card1-img");
@@ -226,7 +226,9 @@ $card2.addEventListener("click", () => {
 })
 
 function LogContest() {
+  console.log("LOGGIN CONTEST")
   console.log(contest)
+  console.log("-----------")
 }
 
 async function StartRandomContest() {
@@ -246,10 +248,7 @@ async function GetRandomContest() {
   querySnapshot.forEach((doc) => {
     contests.push(doc.data());
   });
-
-  console.log(contests);
-  return mockContest
-  // return contests[0];
+  return contests[Math.floor(Math.random() * contests.length)];
 }
 
 async function GetAllCards(){
@@ -259,15 +258,47 @@ async function GetAllCards(){
   querySnapshot.forEach((doc) => {
     cards.push(doc.data());
   });
-  return mockCards;
+  return cards;
 }
 
-// Firestore data converter
+async function UpdateContest(contest){
+  const cardRef = doc(db, "contests", `${contest.id}`);
+  await updateDoc(cardRef, {
+      title: contest.title,
+      cardRanks: contest.cardRanks
+  });
+}
+
+async function CreateContest(contest){
+  const ref = collection(db, "contests").withConverter(contestConverter);
+  await addDoc(ref, contest);
+}
+
+
+async function UpdateCard(card){
+  const cardRef = doc(db, "cards", card.id);
+  await updateDoc(cardRef, {
+    img:card.img, 
+    name:card.name
+  });
+}
+
+async function CreateCard(card){
+  const docRef = await addDoc(collection(db, "cards"), {
+    name: card,
+    img: "/static/img/cards/"+card+".png"
+  });
+}
+
+
+// Firestore data converters
+
+// Contest Converter
 const contestConverter = {
   toFirestore: (contest) => {
       return {
-          name: contest.title,
-          cardRanks: contest.cardRanks,
+          title: contest.title,
+          cardRanks: contest.cardRanks
           };
   },
   fromFirestore: (snapshot, options) => {
@@ -276,6 +307,7 @@ const contestConverter = {
   }
 };
 
+// Card Converter
 const cardConverter = {
   toFirestore: (contest) => {
       return {
