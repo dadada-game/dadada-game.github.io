@@ -21,6 +21,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const contests = [];
 
 class Card {
   id
@@ -51,9 +52,6 @@ class Contest {
 
   async getNextMatch(winner, loser) {
     const m = this
-    // firebase get all cards
-    const allCards = await GetAllCards();
-    // get all cards from firebase
 
     // weird function that picks the 2 best cards
     let existingPicked = 0
@@ -208,6 +206,8 @@ const $contestTitle = document.getElementById("contest-title");
 //   CreateCard($txt.value)
 // })
 
+const $contestList = document.getElementById("contest-list");
+const $currentContest = document.getElementById("current-contest");
 
 const $card1 = document.getElementById("card1");
 const $card1Img = document.getElementById("card1-img");
@@ -240,14 +240,50 @@ async function StartRandomContest() {
   $card2Img.src = card2.img
 }
 
-async function GetRandomContest() {
+async function StartContest(contest){
+  //this await makes no sense, but it otherwise breaks
+  contest = await contests.find(c => c.title === contest);
+  [card1, card2] = await contest.getNextMatch();
+  $contestTitle.innerHTML = contest.title;
+  $card1Img.src = card1.img
+  $card2Img.src = card2.img
+}
 
+async function GetContests(){
   const ref = collection(db, "contests").withConverter(contestConverter);
   const querySnapshot = await getDocs(ref);
-  const contests = [];
   querySnapshot.forEach((doc) => {
     contests.push(doc.data());
   });
+  for (var i in contests) {
+    var anchor = document.createElement("a");
+    anchor.innerText = contests[i].title;
+    var elem = document.createElement("li");
+    elem.appendChild(anchor);
+    anchor.addEventListener("click", event => {
+      SetAsCurrent(event.target.innerText)
+      StartContest(event.target.innerText)
+    })
+    $contestList.appendChild(elem);
+  }
+}
+
+function SetAsCurrent(contest){
+  var currentContest = contests.find(c => c.title === contest)
+  while ($currentContest.firstChild) {
+    $currentContest.removeChild($currentContest.lastChild);
+  }
+  for (var i in currentContest.cardRanks) {
+    var anchor = document.createElement("img");
+    anchor.src = allCards.find(c => c.id === currentContest.cardRanks[i].id).img ;
+    var elem = document.createElement("li");
+    elem.appendChild(anchor);
+    $currentContest.appendChild(elem);
+  }
+  //replaceChildren(...arrayOfNewChildren)
+}
+
+function GetRandomContest() {
   return contests[Math.floor(Math.random() * contests.length)];
 }
 
@@ -321,4 +357,6 @@ const cardConverter = {
   }
 };
 
+await GetContests();
+const allCards = await GetAllCards();
 StartRandomContest();
