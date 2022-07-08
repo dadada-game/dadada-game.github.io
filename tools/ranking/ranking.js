@@ -172,7 +172,13 @@ let contest = null
 
 const $contestTitle = document.getElementById("contest-title");
 
-const $contestList = document.getElementById("contest-list");
+const $contestSelect = document.getElementById("contest-select");
+$contestSelect.addEventListener("change", event => {
+  const contestTitle = $contestSelect.value
+  SetContestByTitle(contestTitle)
+  RunContest()
+})
+
 const $currentContest = document.getElementById("current-contest");
 
 const $card1 = document.getElementById("card1");
@@ -197,6 +203,7 @@ $card2.addEventListener("click", () => {
 
 async function RunRandomContest() {
   contest = contests[Math.floor(Math.random() * contests.length)];
+  $contestSelect.value = contest.title
   RenderContestData(contest)
   await RunContest()
 }
@@ -221,18 +228,13 @@ async function GetContests(){
   });
 
   // render them
-  for (let i in contests) {
-    const $anchor = document.createElement("a");
-    $anchor.classList.toggle("contest-select")
-    $anchor.innerText = contests[i].title;
-    const $elem = document.createElement("li");
-    $elem.appendChild($anchor);
-    $anchor.addEventListener("click", event => {
-      const contestTitle = event.target.innerText
-      SetContestByTitle(contestTitle)
-      RunContest()
-    })
-    $contestList.appendChild($elem);
+  for (let contest of contests) {
+    const title = contest.title;
+    const $option = document.createElement("option")
+    $option.value = contest.title
+    $option.innerText = contest.title
+    $contestSelect.appendChild($option)
+
   }
 }
 
@@ -292,7 +294,6 @@ function RenderContestData(contest){
   }
 
   $currentContest.appendChild($table);
-  //replaceChildren(...arrayOfNewChildren)
 }
 
 async function GetAllCards(){
