@@ -35,6 +35,16 @@ class Card {
   }
 }
 
+
+class Match {
+  winner
+  loser
+
+  constructor(winner, loser) {
+    this.winner = winner
+    this.loser = loser
+  }
+}
 class Contest {
   id
   title
@@ -44,17 +54,16 @@ class Contest {
   constructor(id, title, cardRanks, cardMatches) {
     this.id = id
     this.title = title
-    this.cardRanks = cardRanks.map(rank => (
-        {
-          id: rank.id,
-          rating: rank.rating
-        }))
+    // this.cardRanks = cardRanks.map(rank => (
+    //     {
+    //       id: rank.id,
+    //       rating: rank.rating
+    //     }))
+    this.cardRanks = []
     if (!cardMatches) return;
-    this.cardMatches = cardMatches.map(match => (
-        {
-          winner: match.winner,
-          loser: match.loser
-        }))
+    this.cardMatches = cardMatches.map(m => new Match(m.winner, m.loser))
+
+    this.runAllMatches()
   }
 
   async getNextMatch(winner, loser) {
@@ -76,11 +85,13 @@ class Contest {
       } else {
         const filteredRanks = m.cardRanks
           .filter(c => except.find(e => e.id === c.id) == null) // don't repeat them
-        filteredRanks.sort((a, b) => b.rating.sigma - a.rating.sigma)
-        //console.log("sort!", filteredRanks)
-        if(except.length > 0) id = filteredRanks[Math.floor(Math.random() * filteredRanks.length)].id
-        else {
 
+        // if its not the first card, pick a random one
+        if(except.length > 0) {
+          id = filteredRanks[Math.floor(Math.random() * filteredRanks.length)].id
+        } else {
+          // sort by sigma
+          filteredRanks.sort((a, b) => b.rating.sigma - a.rating.sigma)
           // // find the highest sigma (unkown info)
           // const highestSigma = updatedRanks[0].rating.sigma
           // const highestSigmaCards = updatedRanks
@@ -88,7 +99,6 @@ class Contest {
 
           // // randomize them
           // highestSigmaCards.sort((_, __) => Math.random() * 0.5)
-          // console.log("sort again!", updatedRanks)
           // const highestS
 
           id = filteredRanks[0].id;
@@ -98,117 +108,62 @@ class Contest {
       return allCards.find(c => c.id === id)
     }
 
-    const card1 = GetBestCard();
+    const card1 = GetBestCard()
     const card2 = GetBestCard([card1])
 
    // console.log("picked new cards!", card1, card2)
     return [card1, card2]
   }
 
-
-  runMatch(winner, loser) {
-    const match = {
-      winner: winner.id,
-      loser: loser.id
+  runAllMatches(match) {
+    for(let m of this.cardMatches) {
+      this.runMatch(m)
     }
-    if (this.cardMatches == null){
-      this.cardMatches = [match];
-    }else{
-      this.cardMatches.push(match);
-    }
-    const winnerRating = this.getCardRating(winner)
-    const loserRating = this.getCardRating(loser)
-    const [[newWinnerRating], [newLoserRating]] = rate([[winnerRating], [loserRating]])
-
-    this.updateOrCreateCard(winner, newWinnerRating)
-    this.updateOrCreateCard(loser, newLoserRating)
-
-    UpdateContestMatches(this,match);
-    //UpdateContest(this)
+    // UpdateContest(this)
   }
 
-  getCardRating(card) {
+  addMatch(match) {
+    const m = { winner: match.winner, loser: match.loser }
+    if (this.cardMatches == null){
+      this.cardMatches = [m];
+    } else {
+      this.cardMatches.push(m);
+    }
+
+    UpdateContestMatches(this, m);
+  }
+
+  runMatch(match) {
+    const winnerRating = this.getCardRating(match.winner)
+    const loserRating = this.getCardRating(match.loser)
+    const [[newWinnerRating], [newLoserRating]] = rate([[winnerRating], [loserRating]])
+
+    this.updateOrCreateCard(match.winner, newWinnerRating)
+    this.updateOrCreateCard(match.loser, newLoserRating)
+  }
+
+  getCardRating(id) {
     // try getting existing card rating
-    const rankedCard = this.cardRanks.find(c => c.id === card.id)
+    const rankedCard = this.cardRanks.find(c => c.id === id)
     if (rankedCard != null) return rankedCard.rating
 
     // return an new rating
     return rating()
   }
 
-  updateOrCreateCard(card, rating) {
-    const id = card.id
+  updateOrCreateCard(id, rating) {
     const rankedCard = this.cardRanks.find(c => c.id === id);
     if (rankedCard != null) {
-      console.log("updating card", id, card)
       rankedCard.rating = rating
     } else {
       const newCard = {
         id, rating
       }
       this.cardRanks.push(newCard)
-      console.log("adding card", id, card)
     }
   }
 
 }
-
-// const mockCards = [
-//   {
-//     id: 1,
-//     img: "/static/img/cards/1.png",
-//   },
-//   {
-//     id: 2,
-//     img: "/static/img/cards/2.png",
-//   },
-//   {
-//     id: 3,
-//     img: "/static/img/cards/3.png"
-//   },
-//   {
-//     id: 4,
-//     img: "/static/img/cards/4.png"
-//   },
-//   {
-//     id: 5,
-//     img: "/static/img/cards/5.png"
-//   },
-//   {
-//     id: 6,
-//     img: "/static/img/cards/6.png"
-//   },
-//   {
-//     id: 7,
-//     img: "/static/img/cards/7.png"
-//   },
-//   {
-//     id: 8,
-//     img: "/static/img/cards/8.png"
-//   },
-//   {
-//     id: 9,
-//     img: "/static/img/cards/9.png"
-//   },
-//   {
-//     id: "cvZzlH7RJ5jI4azr9riG",
-//     img: "/static/img/cards/10.png"
-//   },
-// ]
-
-// const mockCardRanks = [
-//   {
-//     id: 1,
-//     rating: { mu: 20.963, sigma: 8.084 },
-//   },
-//   {
-//     id: 2,
-//     rating: { mu: 27.795, sigma: 8.263 },
-//   }
-// ]
-
-// const mockContest = new Contest(69, "the nicest card", mockCardRanks)
-
 
 // Actual execution of stuff
 let card1 = null
@@ -216,12 +171,6 @@ let card2 = null
 let contest = null
 
 const $contestTitle = document.getElementById("contest-title");
-
-// const $btn = document.getElementById("debugButton");
-// const $txt = document.getElementById("text");
-// $btn.addEventListener("click", () => {
-//   CreateCard($txt.value)
-// })
 
 const $btn_contest_add = document.getElementById("add-contest");
 const $contest_name = document.getElementById("contest-name");
@@ -236,41 +185,39 @@ const $currentContest = document.getElementById("current-contest");
 const $card1 = document.getElementById("card1");
 const $card1Img = document.getElementById("card1-img");
 $card1.addEventListener("click", () => {
-  contest.runMatch(card1, card2)
-  StartRandomContest()
-  LogContest()
+  const m = new Match(card1.id, card2.id)
+  contest.addMatch(m)
+  contest.runMatch(m)
+  RenderContestData(contest)
+  RunContest()
 })
 
 const $card2 = document.getElementById("card2");
 const $card2Img = document.getElementById("card2-img");
 $card2.addEventListener("click", () => {
-  contest.runMatch(card2, card1)
-  StartRandomContest()
-  LogContest()
+  const m = new Match(card2.id, card1.id)
+  contest.addMatch(m)
+  contest.runMatch(m)
+  RenderContestData(contest)
+  RunContest()
 })
 
-function LogContest() {
-  console.log("LOGGIN CONTEST")
-  console.log(contest)
-  console.log("-----------")
+async function RunRandomContest() {
+  contest = contests[Math.floor(Math.random() * contests.length)];
+  RenderContestData(contest)
+  await RunContest()
 }
 
-async function StartRandomContest() {
-  contest = await GetRandomContest();
-  [card1, card2] = await contest.getNextMatch();
-
-  $contestTitle.innerHTML = contest.title;
-  $card1Img.src = card1.img
-  $card2Img.src = card2.img
-}
-
-async function StartContest(contest){
-  //this await makes no sense, but it otherwise breaks
-  contest = await contests.find(c => c.title === contest);
+async function RunContest(){
   [card1, card2] = await contest.getNextMatch();
   $contestTitle.innerHTML = contest.title;
   $card1Img.src = card1.img
   $card2Img.src = card2.img
+}
+
+async function SetContestByTitle(title) {
+  contest = contests.find(c => c.title === title)
+  RenderContestData(contest)
 }
 
 async function GetContests(){
@@ -279,36 +226,80 @@ async function GetContests(){
   querySnapshot.forEach((doc) => {
     contests.push(doc.data());
   });
-  for (var i in contests) {
-    var anchor = document.createElement("a");
-    anchor.innerText = contests[i].title;
-    var elem = document.createElement("li");
-    elem.appendChild(anchor);
-    anchor.addEventListener("click", event => {
-      SetAsCurrent(event.target.innerText)
-      StartContest(event.target.innerText)
+
+  // render them
+  for (let i in contests) {
+    const $anchor = document.createElement("a");
+    $anchor.classList.toggle("contest-select")
+    $anchor.innerText = contests[i].title;
+    const $elem = document.createElement("li");
+    $elem.appendChild($anchor);
+    $anchor.addEventListener("click", event => {
+      const contestTitle = event.target.innerText
+      SetContestByTitle(contestTitle)
+      RunContest()
     })
-    $contestList.appendChild(elem);
+    $contestList.appendChild($elem);
   }
 }
 
-function SetAsCurrent(contest){
-  var currentContest = contests.find(c => c.title === contest)
+function RenderContestData(contest){
   while ($currentContest.firstChild) {
     $currentContest.removeChild($currentContest.lastChild);
   }
-  for (var i in currentContest.cardRanks) {
-    var anchor = document.createElement("img");
-    anchor.src = allCards.find(c => c.id === currentContest.cardRanks[i].id).img ;
-    var elem = document.createElement("li");
-    elem.appendChild(anchor);
-    $currentContest.appendChild(elem);
-  }
-  //replaceChildren(...arrayOfNewChildren)
-}
 
-function GetRandomContest() {
-  return contests[Math.floor(Math.random() * contests.length)];
+  const $table = document.createElement("table");
+  const $thead = document.createElement("thead");
+  $table.appendChild($thead)
+  const $headrow = document.createElement("tr");
+  $thead.appendChild($headrow)
+  $table.classList.toggle("contest-table", true)
+
+  const headers = {}
+
+  contest.cardRanks.sort((a, b) => ordinal(b.rating) - ordinal(a.rating))
+  for (let i in contest.cardRanks) {
+    const $row = document.createElement("tr");
+    $row.classList.toggle("contest-row", true)
+    $table.appendChild($row);
+
+    function createCell(header, $child)
+    {
+      const $cell = document.createElement("td")
+      if(headers[header] == null) {
+        headers[header] = true
+        const $headcell = document.createElement("th")
+        $headcell.innerHTML = header
+        $headrow.appendChild($headcell)
+      }
+      $cell.classList.toggle("contest-cell", true)
+      $cell.appendChild($child)
+      $row.appendChild($cell)
+    }
+
+    function createTextCell(header, text) {
+      const $el = document.createElement("span")
+      $el.innerHTML = text
+      createCell(header, $el)
+    }
+
+    const card = allCards.find(c => c.id === contest.cardRanks[i].id)
+
+    const $img = document.createElement("img")
+    $img.src = card.img
+    createTextCell("rank", i)
+    createCell("image", $img)
+
+    createTextCell("name", card.name)
+
+    const rating = contest.cardRanks[i].rating
+    createTextCell("rating", ordinal(rating).toFixed(2))
+    createTextCell("mu", rating.mu.toFixed(2))
+    createTextCell("sigma", rating.sigma.toFixed(2))
+  }
+
+  $currentContest.appendChild($table);
+  //replaceChildren(...arrayOfNewChildren)
 }
 
 async function GetAllCards(){
@@ -330,7 +321,7 @@ async function UpdateContest(contest){
   });
 }
 
-async function UpdateContestMatches(contest,match){
+async function UpdateContestMatches(contest, match){
   const cardRef = doc(db, "contests", `${contest.id}`);
   await updateDoc(cardRef, {
       cardMatches: arrayUnion(match)
@@ -346,7 +337,7 @@ async function CreateContest(contest){
 async function UpdateCard(card){
   const cardRef = doc(db, "cards", card.id);
   await updateDoc(cardRef, {
-    img:card.img, 
+    img:card.img,
     name:card.name
   });
 }
@@ -390,6 +381,11 @@ const cardConverter = {
   }
 };
 
-await GetContests();
-const allCards = await GetAllCards();
-StartRandomContest();
+let allCards = null
+async function main() {
+  await GetContests();
+  allCards = await GetAllCards();
+  RunRandomContest();
+}
+
+main()

@@ -18,15 +18,37 @@
       flex-direction: row;
       align-items: center;
       justify-content: center;
+      padding-top: 10em;
     }
 
     .vs {
       font-size: 5em;
-
     }
 
     .card {
       cursor:pointer;
+    }
+
+    .card img {
+      max-width: 40vmin;
+    }
+
+    .current-contest {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .contest-table {
+      padding: 2em;
+      max-width: 600px;
+      width: 80%;
+    }
+
+
+    .contest-cell img {
+      width: 50px;
+      height: 50px;
     }
   </style>
 
@@ -54,13 +76,11 @@
         <img id="card2-img" src="/static/img/cards/pictogram_cardback.png">
       </div>
     </div>
-  </div>
   <div class="contest-display">
     <ul class="contest-list" id="contest-list">
 
     </ul>
     <div class="current-contest" id="current-contest">
-
     </div>
   </div>
 
