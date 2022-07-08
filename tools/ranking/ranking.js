@@ -35,6 +35,16 @@ class Card {
   }
 }
 
+
+class Match {
+  winner
+  loser
+
+  constructor(winner, loser) {
+    this.winner = winner
+    this.loser = loser
+  }
+}
 class Contest {
   id
   title
@@ -44,17 +54,16 @@ class Contest {
   constructor(id, title, cardRanks, cardMatches) {
     this.id = id
     this.title = title
-    this.cardRanks = cardRanks.map(rank => (
-        {
-          id: rank.id,
-          rating: rank.rating
-        }))
+    // this.cardRanks = cardRanks.map(rank => (
+    //     {
+    //       id: rank.id,
+    //       rating: rank.rating
+    //     }))
+    this.cardRanks = []
     if (!cardMatches) return;
-    this.cardMatches = cardMatches.map(match => (
-        {
-          winner: match.winner,
-          loser: match.loser
-        }))
+    this.cardMatches = cardMatches.map(m => new Match(m.winner, m.loser))
+
+    this.runAllMatches()
   }
 
   async getNextMatch(winner, loser) {
@@ -106,39 +115,43 @@ class Contest {
     return [card1, card2]
   }
 
-
-  runMatch(winner, loser) {
-    const match = {
-      winner: winner.id,
-      loser: loser.id
+  runAllMatches(match) {
+    for(let m of this.cardMatches) {
+      this.runMatch(m)
     }
-    if (this.cardMatches == null){
-      this.cardMatches = [match];
-    }else{
-      this.cardMatches.push(match);
-    }
-    const winnerRating = this.getCardRating(winner)
-    const loserRating = this.getCardRating(loser)
-    const [[newWinnerRating], [newLoserRating]] = rate([[winnerRating], [loserRating]])
-
-    this.updateOrCreateCard(winner, newWinnerRating)
-    this.updateOrCreateCard(loser, newLoserRating)
-
-    UpdateContestMatches(this,match);
-    //UpdateContest(this)
+    // UpdateContest(this)
   }
 
-  getCardRating(card) {
+  addMatch(match) {
+    const m = { winner: match.winner, loser: match.loser }
+    if (this.cardMatches == null){
+      this.cardMatches = [m];
+    } else {
+      this.cardMatches.push(m);
+    }
+
+    UpdateContestMatches(this, m);
+  }
+
+  runMatch(match) {
+    const winnerRating = this.getCardRating(match.winner)
+    const loserRating = this.getCardRating(match.loser)
+    const [[newWinnerRating], [newLoserRating]] = rate([[winnerRating], [loserRating]])
+
+    this.updateOrCreateCard(match.winner, newWinnerRating)
+    this.updateOrCreateCard(match.loser, newLoserRating)
+  }
+
+  getCardRating(id) {
     // try getting existing card rating
-    const rankedCard = this.cardRanks.find(c => c.id === card.id)
+    const rankedCard = this.cardRanks.find(c => c.id === id)
     if (rankedCard != null) return rankedCard.rating
 
     // return an new rating
     return rating()
   }
 
-  updateOrCreateCard(card, rating) {
-    const id = card.id
+  updateOrCreateCard(id, rating) {
     const rankedCard = this.cardRanks.find(c => c.id === id);
     if (rankedCard != null) {
       rankedCard.rating = rating
@@ -165,14 +178,20 @@ const $currentContest = document.getElementById("current-contest");
 const $card1 = document.getElementById("card1");
 const $card1Img = document.getElementById("card1-img");
 $card1.addEventListener("click", () => {
-  contest.runMatch(card1, card2)
+  const m = new Match(card1.id, card2.id)
+  contest.addMatch(m)
+  contest.runMatch(m)
+  RenderContestData(contest)
   RunContest()
 })
 
 const $card2 = document.getElementById("card2");
 const $card2Img = document.getElementById("card2-img");
 $card2.addEventListener("click", () => {
-  contest.runMatch(card2, card1)
+  const m = new Match(card2.id, card1.id)
+  contest.addMatch(m)
+  contest.runMatch(m)
+  RenderContestData(contest)
   RunContest()
 })
 
@@ -261,6 +280,7 @@ function RenderContestData(contest){
 
     const $img = document.createElement("img")
     $img.src = card.img
+    createTextCell("rank", i)
     createCell("image", $img)
 
     createTextCell("name", card.name)
@@ -294,7 +314,7 @@ async function UpdateContest(contest){
   });
 }
 
-async function UpdateContestMatches(contest,match){
+async function UpdateContestMatches(contest, match){
   const cardRef = doc(db, "contests", `${contest.id}`);
   await updateDoc(cardRef, {
       cardMatches: arrayUnion(match)
