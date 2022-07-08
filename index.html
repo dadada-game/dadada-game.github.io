@@ -4,22 +4,25 @@
     <link rel="stylesheet" href="mystyle.css">
     <script type="module">
       const sounds = [
-        "da", "bip", "diff", "ooo"
+        "da", "bip", "diff", "ooh", "coo", "zu", "loo"
       ]
-      const $dadada = document.getElementById("dadada")
 
-      function createSound() {
+      function createSound(name = "dadada") {
+        const $dadada = document.getElementById(name)
         const $sound = document.createElement("span")
         $sound.classList.toggle("sound", true)
         $sound.addEventListener("mouseenter", () => {
           const s = sounds.filter(s => s !== $sound.innerHTML)
           s.sort((_, __) => Math.random() - 0.5)
-          $sound.innerHTML = s[0]
+          $sound.innerHTML = s[0].toUpperCase()
         })
-        $sound.innerHTML = "da"
+        $sound.innerHTML = "da".toUpperCase()
         $dadada.appendChild($sound)
       }
 
+      for(let i =0; i < 20; i++) {
+        createSound("dadada1")
+      }
       for(let i =0; i< 420; i++) {
         createSound()
       }
@@ -32,16 +35,18 @@
 
       body {
         overflow-y: hidden;
+        margin: 0;
       }
 
       .dadada {
         line-break: anywhere;
         overflow-y: hidden;
+
       }
 
       .sound {
         font-family: ebgaramond;
-        font-size: 5em;
+        font-size: 7em;
         transition: color 2s;
       }
 
@@ -52,10 +57,21 @@
         transition: color 0s;
       }
 
+      .soon {
+        padding-left: 1em;
+        padding-right: 0.9em;
+        font-family: ebgaramond;
+        font-size: 7em;
+        background-color: white;
+      }
+
     </style>
   </head>
   <body>
-    <div class="dadada" id="dadada">
-    </div>
+    <span class="dadada" id="dadada1">
+    </span>
+    <span class="soon">coming soon...</span>
+    <span class="dadada" id="dadada">
+    </span>
   </body>
 </html>
