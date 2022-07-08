@@ -192,6 +192,13 @@ $contestSelect.addEventListener("change", event => {
   RunContest()
 })
 
+const $btn_contest_add = document.getElementById("add-contest");
+const $contest_name = document.getElementById("contest-name");
+$btn_contest_add.addEventListener("click", () => {
+  if ($contest_name.value)
+    CreateContest($contest_name.value)
+})
+
 const $currentContest = document.getElementById("current-contest");
 
 const $card1 = document.getElementById("card1");
@@ -337,7 +344,7 @@ async function UpdateContestMatches(contest, match){
 
 async function CreateContest(contest){
   const ref = collection(db, "contests").withConverter(contestConverter);
-  await addDoc(ref, contest);
+  await addDoc(ref, {title:contest, cardRanks:[], cardMatches:[]});
 }
 
 
