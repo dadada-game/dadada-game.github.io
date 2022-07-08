@@ -171,6 +171,19 @@ let card2 = null
 let contest = null
 
 const $contestTitle = document.getElementById("contest-title");
+const $contestResults = document.getElementById("contest-results");
+const $cardMatch = document.getElementById("card-match");
+
+const $showResults = document.getElementById("show-results");
+$showResults.addEventListener("click", e => {
+  $contestResults.classList.toggle("hidden", false)
+  $cardMatch.classList.toggle("hidden", true)
+})
+const $showMatch = document.getElementById("show-match");
+$showMatch.addEventListener("click", e => {
+  $contestResults.classList.toggle("hidden", true)
+  $cardMatch.classList.toggle("hidden", false)
+})
 
 const $contestSelect = document.getElementById("contest-select");
 $contestSelect.addEventListener("change", event => {
