@@ -39,14 +39,21 @@ class Contest {
   id
   title
   cardRanks
+  cardMatches
 
-  constructor(id, title, cardRanks) {
+  constructor(id, title, cardRanks, cardMatches) {
     this.id = id
     this.title = title
     this.cardRanks = cardRanks.map(rank => (
         {
           id: rank.id,
           rating: rank.rating
+        }))
+    if (!cardMatches) return;
+    this.cardMatches = cardMatches.map(match => (
+        {
+          winner: match.winner,
+          loser: match.loser
         }))
   }
 
@@ -100,6 +107,15 @@ class Contest {
 
 
   runMatch(winner, loser) {
+    const match = {
+      winner: winner.id,
+      loser: loser.id
+    }
+    if (this.cardMatches == null){
+      this.cardMatches = [match];
+    }else{
+      this.cardMatches.push(match);
+    }
     const winnerRating = this.getCardRating(winner)
     const loserRating = this.getCardRating(loser)
     const [[newWinnerRating], [newLoserRating]] = rate([[winnerRating], [loserRating]])
@@ -301,7 +317,8 @@ async function UpdateContest(contest){
   const cardRef = doc(db, "contests", `${contest.id}`);
   await updateDoc(cardRef, {
       title: contest.title,
-      cardRanks: contest.cardRanks
+      cardRanks: contest.cardRanks,
+      cardMatches: contest.cardMatches
   });
 }
 
@@ -334,12 +351,13 @@ const contestConverter = {
   toFirestore: (contest) => {
       return {
           title: contest.title,
-          cardRanks: contest.cardRanks
+          cardRanks: contest.cardRanks,
+          cardMatches: contest.cardMatches
           };
   },
   fromFirestore: (snapshot, options) => {
       const data = snapshot.data(options);
-      return new Contest(snapshot.id, data.title, data.cardRanks);
+      return new Contest(snapshot.id, data.title, data.cardRanks, data.cardMatches);
   }
 };
 
