@@ -77,7 +77,6 @@ class Contest {
         const filteredRanks = m.cardRanks
           .filter(c => except.find(e => e.id === c.id) == null) // don't repeat them
         filteredRanks.sort((a, b) => b.rating.sigma - a.rating.sigma)
-        //console.log("sort!", filteredRanks)
         if(except.length > 0) id = filteredRanks[Math.floor(Math.random() * filteredRanks.length)].id
         else {
 
@@ -88,7 +87,6 @@ class Contest {
 
           // // randomize them
           // highestSigmaCards.sort((_, __) => Math.random() * 0.5)
-          // console.log("sort again!", updatedRanks)
           // const highestS
 
           id = filteredRanks[0].id;
@@ -139,14 +137,12 @@ class Contest {
     const id = card.id
     const rankedCard = this.cardRanks.find(c => c.id === id);
     if (rankedCard != null) {
-      console.log("updating card", id, card)
       rankedCard.rating = rating
     } else {
       const newCard = {
         id, rating
       }
       this.cardRanks.push(newCard)
-      console.log("adding card", id, card)
     }
   }
 
@@ -241,12 +237,6 @@ $card2.addEventListener("click", () => {
   LogContest()
 })
 
-function LogContest() {
-  console.log("LOGGIN CONTEST")
-  console.log(contest)
-  console.log("-----------")
-}
-
 async function StartRandomContest() {
   contest = await GetRandomContest();
   [card1, card2] = await contest.getNextMatch();
@@ -258,7 +248,7 @@ async function StartRandomContest() {
 
 async function StartContest(contest){
   //this await makes no sense, but it otherwise breaks
-  contest = await contests.find(c => c.title === contest);
+  contest = contests.find(c => c.title === contest);
   [card1, card2] = await contest.getNextMatch();
   $contestTitle.innerHTML = contest.title;
   $card1Img.src = card1.img
@@ -285,17 +275,60 @@ async function GetContests(){
 }
 
 function SetAsCurrent(contest){
-  var currentContest = contests.find(c => c.title === contest)
+  const currentContest = contests.find(c => c.title === contest)
   while ($currentContest.firstChild) {
     $currentContest.removeChild($currentContest.lastChild);
   }
-  for (var i in currentContest.cardRanks) {
-    var anchor = document.createElement("img");
-    anchor.src = allCards.find(c => c.id === currentContest.cardRanks[i].id).img ;
-    var elem = document.createElement("li");
-    elem.appendChild(anchor);
-    $currentContest.appendChild(elem);
+
+  const $table = document.createElement("table");
+  const $thead = document.createElement("thead");
+  $table.appendChild($thead)
+  const $headrow = document.createElement("tr");
+  $thead.appendChild($headrow)
+  $table.classList.toggle("contest-table", true)
+  currentContest.cardRanks.sort((a, b) => ordinal(b.rating) - ordinal(a.rating))
+  const headers = {}
+  for (let i in currentContest.cardRanks) {
+    const $row = document.createElement("tr");
+    $row.classList.toggle("contest-row", true)
+
+    function createCell(header, $child)
+    {
+      const $cell = document.createElement("td");
+      if(headers[header] == null) {
+        headers[header] = true
+        const $headcell = document.createElement("th");
+        $headcell.innerHTML = header
+        $headrow.appendChild($headcell)
+      }
+      $cell.classList.toggle("contest-cell", true)
+      $cell.appendChild($child);
+      $row.appendChild($cell);
+    }
+
+    function createTextCell(header, text) {
+      const $el = document.createElement("span");
+      $el.innerHTML = text
+      createCell(header, $el)
+    }
+
+    const card = allCards.find(c => c.id === currentContest.cardRanks[i].id) ;
+    const $img = document.createElement("img");
+    $img.src = card.img
+    createCell("image", $img)
+
+    createTextCell("name", card.name)
+    const rating = currentContest.cardRanks[i].rating
+
+    createTextCell("rating", ordinal(rating).toFixed(2))
+    createTextCell("mu", rating.mu.toFixed(2))
+    createTextCell("sigma", rating.sigma.toFixed(2))
+
+    // const rating = currentContest.car
+
+    $table.appendChild($row);
   }
+  $currentContest.appendChild($table);
   //replaceChildren(...arrayOfNewChildren)
 }
 
@@ -331,7 +364,7 @@ async function CreateContest(contest){
 async function UpdateCard(card){
   const cardRef = doc(db, "cards", card.id);
   await updateDoc(cardRef, {
-    img:card.img, 
+    img:card.img,
     name:card.name
   });
 }
@@ -375,6 +408,11 @@ const cardConverter = {
   }
 };
 
-await GetContests();
-const allCards = await GetAllCards();
-StartRandomContest();
+let allCards = null
+async function main() {
+  await GetContests();
+  allCards = await GetAllCards();
+  StartRandomContest();
+}
+
+main()
