@@ -2,6 +2,8 @@ import { rating, rate, ordinal } from '/static/lib/openskill.js/index.js'
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
 import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, arrayUnion   } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
 
+import {Contest, Match} from '../contest.js'
+
 const firebaseConfig = {
 
   apiKey: "AIzaSyBlTsXWbJlWlyZ9hcfKLSw2WETFjBvnhRo",
@@ -35,136 +37,6 @@ class Card {
   }
 }
 
-
-class Match {
-  winner
-  loser
-
-  constructor(winner, loser) {
-    this.winner = winner
-    this.loser = loser
-  }
-}
-class Contest {
-  id
-  title
-  cardRanks
-  cardMatches
-
-  constructor(id, title, cardRanks, cardMatches) {
-    this.id = id
-    this.title = title
-    // this.cardRanks = cardRanks.map(rank => (
-    //     {
-    //       id: rank.id,
-    //       rating: rank.rating
-    //     }))
-    this.cardRanks = []
-    if (!cardMatches) return;
-    this.cardMatches = cardMatches.map(m => new Match(m.winner, m.loser))
-
-    this.runAllMatches()
-  }
-
-  async getNextMatch(winner, loser) {
-    const m = this
-
-    // weird function that picks the 2 best cards
-    let existingPicked = 0
-    let chosenCards = []
-    const unseenCards = allCards
-      .filter(c => m.cardRanks.find(r => r.id == c.id) == null)
-
-    function GetBestCard(except = []) {
-      // debugger
-      let id = -1
-      const filteredUnseen = unseenCards
-          .filter(c => except.find(e => e.id === c.id) == null) // don't repeat them
-      if (filteredUnseen.length > 0) {
-        id = filteredUnseen[0].id
-      } else {
-        const filteredRanks = m.cardRanks
-          .filter(c => except.find(e => e.id === c.id) == null) // don't repeat them
-
-        // if its not the first card, pick a random one
-        if(except.length > 0) {
-          id = filteredRanks[Math.floor(Math.random() * filteredRanks.length)].id
-        } else {
-          // sort by sigma
-          filteredRanks.sort((a, b) => b.rating.sigma - a.rating.sigma)
-          // // find the highest sigma (unkown info)
-          // const highestSigma = updatedRanks[0].rating.sigma
-          // const highestSigmaCards = updatedRanks
-          //   .filter(s => s.rating.sigma == highestSigma) // get highestSigma cards only
-
-          // // randomize them
-          // highestSigmaCards.sort((_, __) => Math.random() * 0.5)
-          // const highestS
-
-          id = filteredRanks[0].id;
-        }
-      }
-
-      return allCards.find(c => c.id === id)
-    }
-
-    const card1 = GetBestCard()
-    const card2 = GetBestCard([card1])
-
-   // console.log("picked new cards!", card1, card2)
-    return [card1, card2]
-  }
-
-  runAllMatches(match) {
-    for(let m of this.cardMatches) {
-      this.runMatch(m)
-    }
-    // UpdateContest(this)
-  }
-
-  addMatch(match) {
-    const m = { winner: match.winner, loser: match.loser }
-    if (this.cardMatches == null){
-      this.cardMatches = [m];
-    } else {
-      this.cardMatches.push(m);
-    }
-
-    UpdateContestMatches(this, m);
-  }
-
-  runMatch(match) {
-    const winnerRating = this.getCardRating(match.winner)
-    const loserRating = this.getCardRating(match.loser)
-    const [[newWinnerRating], [newLoserRating]] = rate([[winnerRating], [loserRating]])
-
-    this.updateOrCreateCard(match.winner, newWinnerRating)
-    this.updateOrCreateCard(match.loser, newLoserRating)
-  }
-
-  getCardRating(id) {
-    // try getting existing card rating
-    const rankedCard = this.cardRanks.find(c => c.id === id)
-    if (rankedCard != null) return rankedCard.rating
-
-    // return an new rating
-    return rating()
-  }
-
-  updateOrCreateCard(id, rating) {
-    const rankedCard = this.cardRanks.find(c => c.id === id);
-    if (rankedCard != null) {
-      rankedCard.rating = rating
-    } else {
-      const newCard = {
-        id, rating
-      }
-      this.cardRanks.push(newCard)
-    }
-  }
-
-}
-
 // Actual execution of stuff
 let card1 = null
 let card2 = null
@@ -174,15 +46,15 @@ const $contestTitle = document.getElementById("contest-title");
 const $contestResults = document.getElementById("contest-results");
 const $cardMatch = document.getElementById("card-match");
 
-const $showResults = document.getElementById("show-results");
-$showResults.addEventListener("click", e => {
-  $contestResults.classList.toggle("hidden", false)
-  $cardMatch.classList.toggle("hidden", true)
-})
-const $showMatch = document.getElementById("show-match");
-$showMatch.addEventListener("click", e => {
-  $contestResults.classList.toggle("hidden", true)
-  $cardMatch.classList.toggle("hidden", false)
+let showRatings = false
+const $toggleMatch = document.getElementById("toggle-match")
+$toggleMatch.addEventListener("click", e => {
+  showRatings = !showRatings
+  $contestResults.classList.toggle("hidden", !showRatings)
+  $cardMatch.classList.toggle("hidden", showRatings)
+  $toggleMatch.innerHTML = showRatings
+    ? "back to match"
+    : "show ratings"
 })
 
 const $contestSelect = document.getElementById("contest-select");
@@ -204,22 +76,23 @@ const $currentContest = document.getElementById("current-contest");
 const $card1 = document.getElementById("card1");
 const $card1Img = document.getElementById("card1-img");
 $card1.addEventListener("click", () => {
-  const m = new Match(card1.id, card2.id)
-  contest.addMatch(m)
-  contest.runMatch(m)
-  RenderContestData(contest)
-  RunContest()
+  RunMatchForContestAndUpdate(card1, card2)
 })
 
 const $card2 = document.getElementById("card2");
 const $card2Img = document.getElementById("card2-img");
 $card2.addEventListener("click", () => {
-  const m = new Match(card2.id, card1.id)
+  RunMatchForContestAndUpdate(card2, card1)
+})
+
+function RunMatchForContestAndUpdate(winner, loser) {
+  const m = new Match(winner.id, loser.id)
   contest.addMatch(m)
   contest.runMatch(m)
+  UpdateContestMatches(contest, m);
   RenderContestData(contest)
   RunContest()
-})
+}
 
 async function RunRandomContest() {
   contest = contests[Math.floor(Math.random() * contests.length)];
@@ -229,7 +102,7 @@ async function RunRandomContest() {
 }
 
 async function RunContest(){
-  [card1, card2] = await contest.getNextMatch();
+  [card1, card2] = await contest.getNextMatch(allCards);
   $contestTitle.innerHTML = contest.title;
   $card1Img.src = card1.img
   $card2Img.src = card2.img
@@ -344,7 +217,7 @@ async function UpdateContest(contest){
 async function UpdateContestMatches(contest, match){
   const cardRef = doc(db, "contests", `${contest.id}`);
   await updateDoc(cardRef, {
-      cardMatches: arrayUnion(match)
+      cardMatches: arrayUnion({winner: match.winner, loser: match.loser})
   });
 }
 
