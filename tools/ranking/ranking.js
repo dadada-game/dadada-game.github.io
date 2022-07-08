@@ -1,6 +1,6 @@
 import { rating, rate, ordinal } from '/static/lib/openskill.js/index.js'
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
-import { collection, getFirestore, getDocs, doc, updateDoc, addDoc,setDoc  } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
+import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, arrayUnion   } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
 
 const firebaseConfig = {
 
@@ -121,7 +121,8 @@ class Contest {
     this.updateOrCreateCard(winner, newWinnerRating)
     this.updateOrCreateCard(loser, newLoserRating)
 
-    UpdateContest(this)
+    UpdateContestMatches(this,match);
+    //UpdateContest(this)
   }
 
   getCardRating(card) {
@@ -352,6 +353,13 @@ async function UpdateContest(contest){
       title: contest.title,
       cardRanks: contest.cardRanks,
       cardMatches: contest.cardMatches
+  });
+}
+
+async function UpdateContestMatches(contest,match){
+  const cardRef = doc(db, "contests", `${contest.id}`);
+  await updateDoc(cardRef, {
+      cardMatches: arrayUnion(match)
   });
 }
 
