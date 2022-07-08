@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .contest {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .cardTitle {
+            font-size: 10em;
+            align-items: center;
+        }
+
+        .cardMatch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 10em;
+        }
+
+        .vs {
+            font-size: 5em;
+        }
+
+        .card {
+            cursor: pointer;
+        }
+
+        .card img {
+            max-width: 40vmin;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .dropdown {
+            position: relative;
+            width: 100px;
+        }
+
+        .dropdown select {
+            width: 100%;
+        }
+
+        .dropdown>* {
+            box-sizing: border-box;
+            height: 1.5em;
+        }
+
+        .dropdown input {
+            position: absolute;
+            width: calc(100% - 20px);
+        }
+
+        .card {
+            grid-area: menu;
+        }
+
+        .card-tags {
+            grid-area: main;
+        }
+
+        .dropdown-area {
+            grid-area: footer;
+            width: 100px
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-areas:
+                'header header header header header header'
+                'menu main main main right right'
+                'menu footer footer footer footer footer';
+            gap: 10px;
+            padding: 10px;
+            width: 100%
+        }
+
+        .grid-container>div {
+            background-color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 20px 0;
+        }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script type="module" src="./tagging.js"></script>
+</head>
+
+<body>
+    <div class="contest">
+        <div id="card-title" class="cardTitle">
+            Card Tagging
+        </div>
+        <div>
+            <label for="card-select">Select Card </label>
+            <select name="card" id="card-select"></select>
+        </div>
+        <div id="card-edit" class="cardMatch grid-container">
+            <div id="card" class="card grid-item">
+                <img id="card-img" src="/static/img/cards/pictogram_cardback.png">
+            </div>
+            <div class="card-tags grid-item">
+                <h3> Tags </h3>
+                <p id="card-tags"></p>
+            </div>
+            <div class="dropdown grid-item dropdown-area">
+                <input id="tag-value" type="text" />
+                <select id="dropdow-select"
+                    onchange="this.previousElementSibling.value=this.value; this.previousElementSibling.focus()">
+                </select>
+                <button id="submit" class="btn"> Add </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
