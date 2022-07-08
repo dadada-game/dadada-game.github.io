@@ -252,9 +252,9 @@ async function GetContests(){
     const title = contest.title;
     const $option = document.createElement("option")
     $option.value = contest.title
-    $option.innerText = contest.title
-    $contestSelect.appendChild($option)
+    $option.innerText = `${contest.title} (${contest.cardMatches.length})`
 
+    $contestSelect.appendChild($option)
   }
 }
 
@@ -309,8 +309,14 @@ function RenderContestData(contest){
 
     const rating = contest.cardRanks[i].rating
     createTextCell("rating", ordinal(rating).toFixed(2))
-    createTextCell("mu", rating.mu.toFixed(2))
-    createTextCell("sigma", rating.sigma.toFixed(2))
+    // createTextCell("mu", rating.mu.toFixed(2))
+    // createTextCell("sigma", rating.sigma.toFixed(2))
+
+    for(let c of contests) {
+      if(c.title === contest.title) continue
+      const r = c.cardRanks[i].rating
+      createTextCell(`rating (${c.title})`, ordinal(r).toFixed(2))
+    }
   }
 
   $currentContest.appendChild($table);
