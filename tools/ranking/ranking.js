@@ -2,7 +2,8 @@ import { rating, rate, ordinal } from '/static/lib/openskill.js/index.js'
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
 import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, arrayUnion   } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
 
-import {Contest, Match} from '../contest.js'
+import { Contest, Match } from '../contest.js'
+import Card from "../card.js"
 
 const firebaseConfig = {
 
@@ -24,18 +25,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const contests = [];
-
-class Card {
-  id
-  name
-  img
-
-  constructor(id, name, img) {
-    this.id = id
-    this.name = name
-    this.img = img
-  }
-}
 
 // Actual execution of stuff
 let card1 = null

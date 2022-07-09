@@ -3,16 +3,6 @@
 
 <head>
     <style>
-        .contest {
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .cardTitle {
-            font-size: 10em;
-            align-items: center;
-        }
 
         .cardMatch {
             display: flex;
@@ -92,15 +82,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script type="module" src="./tagging.js"></script>
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
-    <div class="contest">
-        <div id="card-title" class="cardTitle">
-            Card Tagging
+    <div class="tool">
+        <div id="card-title" class="title">
+            card tagging
         </div>
         <div>
-            <label for="card-select">Select Card </label>
+            <label for="card-select">select card </label>
             <select name="card" id="card-select"></select>
         </div>
         <div id="card-edit" class="cardMatch grid-container">
@@ -108,15 +99,14 @@
                 <img id="card-img" src="/static/img/cards/pictogram_cardback.png">
             </div>
             <div class="card-tags grid-item">
-                <h3> Tags </h3>
+                <h3> tags </h3>
                 <p id="card-tags"></p>
             </div>
             <div class="dropdown grid-item dropdown-area">
                 <input id="tag-value" type="text" />
-                <select id="dropdow-select"
-                    onchange="this.previousElementSibling.value=this.value; this.previousElementSibling.focus()">
+                <select id="select-tag">
                 </select>
-                <button id="submit" class="btn"> Add </button>
+                <button id="submit" class="btn"> add </button>
             </div>
         </div>
     </div>

@@ -1,6 +1,8 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
 import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, getDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
 
+import Card from "../card.js"
+
 const firebaseConfig = {
 
     apiKey: "AIzaSyBlTsXWbJlWlyZ9hcfKLSw2WETFjBvnhRo",
@@ -21,21 +23,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-class Card {
-    id
-    name
-    img
-    tags
-
-    constructor(id, name, img, tags) {
-        this.id = id
-        this.name = name
-        this.img = img
-        this.tags = tags
-    }
-}
-
-
 const $cardImage = document.getElementById("card-img");
 const $dropdownCard = document.getElementById("card-select");
 $dropdownCard.addEventListener("change", event => {
@@ -45,7 +32,12 @@ $dropdownCard.addEventListener("change", event => {
 
 const $cardTags = document.getElementById("card-tags");
 
-const $dropdownSelect = document.getElementById("dropdow-select");
+const $dropdownSelect = document.getElementById("select-tag");
+$dropdownSelect.addEventListener("change", () => {
+    $tag.value=$dropdownSelect.value;
+    $tag.focus()
+})
+
 const $tag = document.getElementById("tag-value");
 const $submit = document.getElementById("submit");
 $submit.addEventListener("click", e => {
@@ -76,7 +68,7 @@ function RefreshCard(){
     $cardImage.src = currentCard.img;
     $cardTags.innerText ='';
     currentCard.tags?.forEach((tag) => {
-        $cardTags.innerText = $cardTags.innerText +" "+tag; 
+        $cardTags.innerText = $cardTags.innerText +" "+tag;
     })
 }
 
