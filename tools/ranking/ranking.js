@@ -84,8 +84,8 @@ function RunMatchForContestAndUpdate(winner, loser) {
 }
 
 async function RunRandomContest() {
-  contest = contests[Math.floor(Math.random() * contests.length)];
-  $contestSelect.value = contest.title
+  const title = contests[Math.floor(Math.random() * contests.length)].title
+  SetContestByTitle(title)
   RenderContestData(contest)
   await RunContest()
 }
@@ -99,6 +99,8 @@ async function RunContest(){
 
 async function SetContestByTitle(title) {
   contest = contests.find(c => c.title === title)
+  window.location.hash = title
+  $contestSelect.value = contest.title
   RenderContestData(contest)
 }
 
@@ -162,12 +164,16 @@ function RenderContestData(contest){
 
     const card = allCards.find(c => c.id === contest.cardRanks[i].id)
 
+    const $link = document.createElement("a")
+    $link.href = `../tagging#${card.name}`
     const $img = document.createElement("img")
     $img.src = card.img
-    createTextCell("rank", i)
-    createCell("image", $img)
 
-    createTextCell("name", card.name)
+    $link.appendChild($img)
+    createTextCell("rank", i)
+    createCell("image", $link)
+
+    // createTextCell("name", card.name)
 
     const rating = contest.cardRanks[i].rating
     createTextCell("rating", ordinal(rating).toFixed(2))
@@ -267,7 +273,16 @@ let allCards = null
 async function main() {
   await GetContests();
   allCards = await GetAllCards();
-  RunRandomContest();
+  const hash = window.location.hash.slice(1).replaceAll("%20", " ")
+  const contest = contests.find(c => c.title === hash)
+  if(contest) {
+    SetContestByTitle(contest.title)
+    RunContest()
+  } else {
+    RunRandomContest()
+  }
+
+  console.log(hash)
 }
 
 main()
