@@ -26,7 +26,7 @@ const db = getFirestore(app);
 const $cardImage = document.getElementById("card-img");
 const $dropdownCard = document.getElementById("card-select");
 $dropdownCard.addEventListener("change", event => {
-    currentCard = allCards.find(c => c.name === $dropdownCard.value)
+    SetCurrentCard(allCards.find(c => c.name === $dropdownCard.value))
     RefreshCard();
 })
 
@@ -137,11 +137,30 @@ const cardConverter = {
 let allCards = null;
 let allTags = null;
 let currentCard = null;
+function SetCurrentCard(card) {
+    $dropdownCard.value = card.name;
+    window.location.hash = card.name
+    currentCard = card
+}
+
 async function main() {
     allCards = await GetAllCards();
     allTags = await GetAllTags();
-    currentCard = allCards[Math.floor(Math.random() * allCards.length)];
-    $dropdownCard.value = currentCard.name;
+
+    let hashCard = null
+    const hash = window.location.hash.slice(1)
+    console.log(hash)
+    // if has hash, get that card
+    if(hash) {
+        hashCard = allCards.find(c => c.name === hash)
+    }
+
+    if (!hashCard) {
+        hashCard = allCards[Math.floor(Math.random() * allCards.length)];
+    }
+
+    SetCurrentCard(hashCard)
+
     RefreshCard();
 }
 main()
