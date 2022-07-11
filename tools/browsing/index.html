@@ -1,0 +1,41 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/static/lib/ramda.min.js"></script>
+  <script type="module" src="./browsing.js"></script>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .card {
+      max-width: 100px;
+    }
+
+    .card img{
+      max-width: 100px;
+    }
+
+    .cardList {
+      flex-direction: row;
+      flex-wrap: wrap;
+      display: flex;
+    }
+
+  </style>
+  <title>browsing</title>
+</head>
+<body>
+  <div class="title">card browser</div>
+  <div id="tag-filter" class="card-list">
+    <div class="dropdown grid-item dropdown-area">
+      <input id="filter" type="text" />
+      <select id="select-tag"></select>
+      <button id="submit" class="btn"> add </button>
+    </div>
+  </div>
+  <div id="card-list" class="cardList">
+    <div class="card">card</div>
+  </div>
+
+</body>
+</html>

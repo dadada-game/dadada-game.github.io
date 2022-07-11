@@ -8,6 +8,6 @@ export default class Card {
         this.id = id
         this.name = name
         this.img = img
-        this.tags = tags
+        this.tags = new Set(tags)
     }
 }

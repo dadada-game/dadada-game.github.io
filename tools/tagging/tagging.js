@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
-import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, getDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
+import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, getDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
 
 import Card from "../card.js"
 
@@ -34,17 +34,19 @@ const $cardTags = document.getElementById("card-tags");
 
 const $dropdownSelect = document.getElementById("select-tag");
 $dropdownSelect.addEventListener("change", () => {
-    $tag.value=$dropdownSelect.value;
+    $tag.value = $dropdownSelect.value;
     $tag.focus()
 })
 
 const $tag = document.getElementById("tag-value");
 const $submit = document.getElementById("submit");
 $submit.addEventListener("click", e => {
-    TagCard($tag.value);
+    const tag = $tag.value.toLowerCase()
+    TagCard(tag);
     RefreshCard();
-    if (allTags.indexOf($tag.value) == -1)
-        AddTag($tag.value);
+    if (!allTags.has(tag)) {
+        AddTag(tag);
+    }
 })
 
 async function GetAllCards() {
@@ -68,8 +70,28 @@ function RefreshCard(){
     $cardImage.src = currentCard.img;
     $cardTags.innerText ='';
     currentCard.tags?.forEach((tag) => {
-        $cardTags.innerText = $cardTags.innerText +" "+tag;
+        const $tag = $CreateElement(TagTemplate(tag));
+        $cardTags.appendChild($tag)
+        const $delete = $tag.querySelector(`#card-tag-delete-${tag}`)
+        $delete.addEventListener("click", async () => {
+            await RemoveCardTag(currentCard, tag)
+            RefreshCard()
+        })
     })
+}
+
+function $CreateElement(html) {
+    const placeholder = document.createElement("div");
+    placeholder.innerHTML = html;
+    return placeholder.firstElementChild;
+}
+
+function TagTemplate(tag) {
+    return `
+<div class="card-tag">
+    <span class="card-tag-text">${tag}</span>
+    <span class="card-tag-delete" id="card-tag-delete-${tag}">🗑️</span>
+</div>`
 }
 
 async function GetAllTags() {
@@ -106,14 +128,25 @@ async function AddTag(tag) {
     await updateDoc(tagRef, {
         list: arrayUnion(tag)
     });
+
+    allTags.add(tag)
+}
+
+async function RemoveCardTag(card, tag) {
+    const cardRef = doc(db, "cards", card.id);
+    if (card.tags)
+        currentCard.tags.delete(tag);
+    await updateDoc(cardRef, {
+        tags: arrayRemove(tag)
+    });
 }
 
 async function TagCard(tag){
     const cardRef = doc(db, "cards", currentCard.id);
     if (currentCard.tags)
-        currentCard.tags.push(tag);
+        currentCard.tags.add(tag);
     else
-        currentCard.tags = [tag];
+        currentCard.tags = new Set([tag]);
     await updateDoc(cardRef, {
         tags: arrayUnion(tag)
     });
@@ -135,7 +168,7 @@ const cardConverter = {
 };
 
 let allCards = null;
-let allTags = null;
+let allTags = new Set();
 let currentCard = null;
 function SetCurrentCard(card) {
     $dropdownCard.value = card.name;
@@ -145,7 +178,7 @@ function SetCurrentCard(card) {
 
 async function main() {
     allCards = await GetAllCards();
-    allTags = await GetAllTags();
+    allTags = new Set(await GetAllTags());
 
     let hashCard = null
     const hash = window.location.hash.slice(1)
