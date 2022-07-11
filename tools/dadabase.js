@@ -57,14 +57,62 @@ class Dadabase {
     this.db = getFirestore(app);
   }
 
-  async getAllCards() {
+  async updateContest(contest){
+    const cardRef = doc(this.db, "contests", `${contest.id}`);
+    await updateDoc(cardRef, {
+        title: contest.title,
+        cardRanks: contest.cardRanks,
+        cardMatches: contest.cardMatches
+    });
+  }
+
+  async updateContestMatches(contest, match){
+    const cardRef = doc(this.db, "contests", `${contest.id}`);
+    await updateDoc(cardRef, {
+        cardMatches: arrayUnion({winner: match.winner, loser: match.loser})
+    });
+  }
+
+  async createContest(contest){
+    const ref = collection(this.db, "contests").withConverter(contestConverter)
+    await addDoc(ref, {title:contest, cardRanks:[], cardMatches:[]})
+  }
+
+  async getContests() {
+    const ref = collection(this.db, "contests").withConverter(contestConverter)
+    const querySnapshot = await getDocs(ref)
+
+    const contests = []
+    querySnapshot.forEach((doc) => {
+      contests.push(doc.data())
+    })
+
+    return contests
+  }
+
+  async createCard(card){
+    const docRef = await addDoc(collection(this.db, "cards"), {
+      name: card,
+      img: `/static/img/cards/${card}.png`
+    });
+  }
+
+  async getAllCards(showArchived = false) {
     const ref = collection(this.db, "cards").withConverter(cardConverter);
     const querySnapshot = await getDocs(ref);
     const cards = [];
     querySnapshot.forEach((doc) => {
       cards.push(doc.data());
+    })
+    return cards.filter(c => !c.tags.has("archived"))
+  }
+
+  async updateCard(card){
+    const cardRef = doc(this.db, "cards", card.id);
+    await updateDoc(cardRef, {
+      img:card.img,
+      name:card.name
     });
-    return cards;
   }
 }
 

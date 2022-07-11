@@ -84,7 +84,6 @@ export class Contest {
     for(let m of this.cardMatches) {
       this.runMatch(m)
     }
-    // UpdateContest(this)
   }
 
   addMatch(match) {

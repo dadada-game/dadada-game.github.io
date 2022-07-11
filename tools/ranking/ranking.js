@@ -1,30 +1,11 @@
 import { rating, rate, ordinal } from '/static/lib/openskill.js/index.js'
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
-import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, arrayUnion   } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
 
 import { Contest, Match } from '../contest.js'
-import Card from "../card.js"
+import Card from '../card.js'
 
-const firebaseConfig = {
+import ddb from '../dadabase.js'
 
-  apiKey: "AIzaSyBlTsXWbJlWlyZ9hcfKLSw2WETFjBvnhRo",
-
-  authDomain: "dadada-12228.firebaseapp.com",
-
-  projectId: "dadada-12228",
-
-  storageBucket: "dadada-12228.appspot.com",
-
-  messagingSenderId: "349029071019",
-
-  appId: "1:349029071019:web:e29259ffea1bb733291fee"
-
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const contests = [];
+let contests = [];
 
 // Actual execution of stuff
 let card1 = null
@@ -58,7 +39,7 @@ const $contest_name = document.getElementById("contest-name");
 $btn_contest_add.addEventListener("click", async () => {
   const title = $contest_name.value
   if (title) {
-    await CreateContest(title)
+    await ddb.createContest(title)
     await GetContests()
     SetContestByTitle(title)
     StartContest()
@@ -83,7 +64,7 @@ function RunMatchForContestAndUpdate(winner, loser) {
   const m = new Match(winner.id, loser.id)
   contest.addMatch(m)
   contest.runMatch(m)
-  UpdateContestMatches(contest, m);
+  ddb.updateContestMatches(contest, m);
   RenderContestData(contest)
   StartContest()
 }
@@ -109,14 +90,9 @@ async function SetContestByTitle(title) {
   RenderContestData(contest)
 }
 
-async function GetContests(){
-  const ref = collection(db, "contests").withConverter(contestConverter);
-  const querySnapshot = await getDocs(ref);
 
-  contests.length = 0
-  querySnapshot.forEach((doc) => {
-    contests.push(doc.data());
-  });
+async function GetContests(){
+  contests = await ddb.getContests()
 
   while ($contestSelect.lastChild) {
     $contestSelect.removeChild($contestSelect.lastChild);
@@ -202,88 +178,10 @@ function RenderContestData(contest){
   $currentContest.appendChild($table);
 }
 
-async function GetAllCards(){
-  const ref = collection(db, "cards").withConverter(cardConverter);
-  const querySnapshot = await getDocs(ref);
-  const cards = [];
-  querySnapshot.forEach((doc) => {
-    cards.push(doc.data());
-  });
-  return cards;
-}
-
-async function UpdateContest(contest){
-  const cardRef = doc(db, "contests", `${contest.id}`);
-  await updateDoc(cardRef, {
-      title: contest.title,
-      cardRanks: contest.cardRanks,
-      cardMatches: contest.cardMatches
-  });
-}
-
-async function UpdateContestMatches(contest, match){
-  const cardRef = doc(db, "contests", `${contest.id}`);
-  await updateDoc(cardRef, {
-      cardMatches: arrayUnion({winner: match.winner, loser: match.loser})
-  });
-}
-
-async function CreateContest(contest){
-  const ref = collection(db, "contests").withConverter(contestConverter);
-  await addDoc(ref, {title:contest, cardRanks:[], cardMatches:[]});
-}
-
-async function UpdateCard(card){
-  const cardRef = doc(db, "cards", card.id);
-  await updateDoc(cardRef, {
-    img:card.img,
-    name:card.name
-  });
-}
-
-async function CreateCard(card){
-  const docRef = await addDoc(collection(db, "cards"), {
-    name: card,
-    img: "/static/img/cards/"+card+".png"
-  });
-}
-
-
-// Firestore data converters
-
-// Contest Converter
-const contestConverter = {
-  toFirestore: (contest) => {
-      return {
-          title: contest.title,
-          cardRanks: contest.cardRanks,
-          cardMatches: contest.cardMatches
-          };
-  },
-  fromFirestore: (snapshot, options) => {
-      const data = snapshot.data(options);
-      return new Contest(snapshot.id, data.title, data.cardRanks, data.cardMatches);
-  }
-};
-
-// Card Converter
-const cardConverter = {
-  toFirestore: (contest) => {
-      return {
-          name: contest.name,
-          img: contest.img
-          };
-  },
-  fromFirestore: (snapshot, options) => {
-      const data = snapshot.data(options);
-      return new Card(snapshot.id, data.name, data.img);
-  }
-};
-
 let allCards = null
 async function main() {
   await GetContests();
-  allCards = await GetAllCards();
+  allCards = await ddb.getAllCards();
   const hash = window.location.hash.slice(1).replaceAll("%20", " ")
   const contest = contests.find(c => c.title === hash)
   if(contest) {
