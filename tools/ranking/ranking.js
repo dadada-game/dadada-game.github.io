@@ -50,14 +50,19 @@ const $contestSelect = document.getElementById("contest-select");
 $contestSelect.addEventListener("change", event => {
   const contestTitle = $contestSelect.value
   SetContestByTitle(contestTitle)
-  RunContest()
+  StartContest()
 })
 
 const $btn_contest_add = document.getElementById("add-contest");
 const $contest_name = document.getElementById("contest-name");
-$btn_contest_add.addEventListener("click", () => {
-  if ($contest_name.value)
-    CreateContest($contest_name.value)
+$btn_contest_add.addEventListener("click", async () => {
+  const title = $contest_name.value
+  if (title) {
+    await CreateContest(title)
+    await GetContests()
+    SetContestByTitle(title)
+    StartContest()
+  }
 })
 
 const $currentContest = document.getElementById("current-contest");
@@ -80,17 +85,17 @@ function RunMatchForContestAndUpdate(winner, loser) {
   contest.runMatch(m)
   UpdateContestMatches(contest, m);
   RenderContestData(contest)
-  RunContest()
+  StartContest()
 }
 
 async function RunRandomContest() {
   const title = contests[Math.floor(Math.random() * contests.length)].title
   SetContestByTitle(title)
   RenderContestData(contest)
-  await RunContest()
+  await StartContest()
 }
 
-async function RunContest(){
+async function StartContest(){
   [card1, card2] = await contest.getNextMatch(allCards);
   $contestTitle.innerHTML = contest.title;
   $card1Img.src = card1.img
@@ -107,9 +112,15 @@ async function SetContestByTitle(title) {
 async function GetContests(){
   const ref = collection(db, "contests").withConverter(contestConverter);
   const querySnapshot = await getDocs(ref);
+
+  contests.length = 0
   querySnapshot.forEach((doc) => {
     contests.push(doc.data());
   });
+
+  while ($contestSelect.lastChild) {
+    $contestSelect.removeChild($contestSelect.lastChild);
+  }
 
   // render them
   for (let contest of contests) {
@@ -180,10 +191,11 @@ function RenderContestData(contest){
     // createTextCell("mu", rating.mu.toFixed(2))
     // createTextCell("sigma", rating.sigma.toFixed(2))
 
-    for(let c of contests) {
+    for(let c of contests.filter(c => c.cardRanks)) {
       if(c.title === contest.title) continue
-      const r = c.cardRanks[i].rating
-      createTextCell(`rating (${c.title})`, ordinal(r).toFixed(2))
+      const r = c.cardRanks.find(r => r.id === card.id)
+      const value = (r && ordinal(r.rating).toFixed(2)) || "---"
+      createTextCell(`rating (${c.title})`, value)
     }
   }
 
@@ -220,7 +232,6 @@ async function CreateContest(contest){
   const ref = collection(db, "contests").withConverter(contestConverter);
   await addDoc(ref, {title:contest, cardRanks:[], cardMatches:[]});
 }
-
 
 async function UpdateCard(card){
   const cardRef = doc(db, "cards", card.id);
@@ -277,7 +288,7 @@ async function main() {
   const contest = contests.find(c => c.title === hash)
   if(contest) {
     SetContestByTitle(contest.title)
-    RunContest()
+    StartContest()
   } else {
     RunRandomContest()
   }
