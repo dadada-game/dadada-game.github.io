@@ -23,7 +23,7 @@ function TagTemplate(tag) {
   return `
 <div class="card-tag">
   <span class="card-tag-text">${tag}</span>
-  <span class="card-tag-delete" id="card-tag-delete-${tag}">🗑️</span>
+  <span class="card-tag-delete" id="card-tag-delete-${tag}">✖</span>
 </div>`
 }
 
@@ -58,19 +58,23 @@ function $CreateElement(html) {
 
 
 function Filter() {
-  filteredCards = allCards.filter(
-    (card) => {
-      var hasTag = false;
-      tags.forEach(
-        (tag) => {
-          if (card.tags.has(tag)) {
-            hasTag = true;
-          }else{
-          }
-        })
-      return hasTag;
-    }
-  )
+  if (tags.length == 0) {
+    filteredCards = allCards;
+  } else {
+    filteredCards = allCards.filter(
+      (card) => {
+        var hasTag = false;
+        tags.forEach(
+          (tag) => {
+            if (card.tags.has(tag)) {
+              hasTag = true;
+            } else {
+            }
+          })
+        return hasTag;
+      }
+    )
+  }
   InitializeCards();
 }
 

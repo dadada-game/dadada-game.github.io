@@ -26,6 +26,74 @@ html, body {
   margin-bottom: 10px;
 }
 
-.container {
-  width: 80%;
+.card {
+  border-radius: 20px;
+  border: 3px;
+  border-style: solid;
+  margin: 10px;
+  cursor: pointer;
+  padding: 3px;
+}
+
+.dropdown {
+  position: relative;
+  width: 150px;
+  display: inline-block;
+  border: solid 1px black;
+  color: black;
+  background-color: white;
+}
+
+.dropdown-input {
+  position: relative;
+  width: 150px;
+  display: inline-block;
+  color: black;
+  background-color: white;
+}
+
+.dropdown-input select {
+  width: 100%;
+  border: solid 1px black;
+  color: black;
+  background-color: white;
+}
+
+.dropdown-input>* {
+  box-sizing: border-box;
+  height: 1.5em;
+}
+
+.dropdown-input input {
+  position: absolute;
+  border: solid 1px black;
+  width: calc(100% - 20px);
+}
+
+.button {
+  border: solid 1px black;
+  color: black;
+  background-color: white;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #52525E;
+  color:white;
+}
+
+.card-tag {
+  padding: 4px;
+  text-align: left;
+  border: solid 1px black;
+  margin: 5px;
+}
+
+.card-tag-text {
+  display: inline-block;
+}
+
+.card-tag-delete {
+  cursor: pointer;
+  margin-left: 10px;
 }

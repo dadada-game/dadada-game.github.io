@@ -8,14 +8,6 @@
   <script type="module" src="./browsing.js"></script>
   <link rel="stylesheet" href="../style.css">
   <style>
-    .card {
-      max-width: 100px;
-    }
-
-    .card img {
-      max-width: 100px;
-    }
-
     .card-list {
       align-items: center;
     }
@@ -35,40 +27,26 @@
       font-size: 1.5em;
     }
 
-    .dropdown {
-            position: relative;
-            width: 100px;
-        }
+    .card img {
+      max-width: 100px;
+    }
 
-        .dropdown select {
-            width: 100%;
-        }
-
-        .dropdown>* {
-            box-sizing: border-box;
-            height: 1.5em;
-        }
-
-        .dropdown input {
-            position: absolute;
-            width: calc(100% - 20px);
-        }
   </style>
   <title>browsing</title>
 </head>
 
 <body>
   <div class="title">card browser</div>
-  <div class="container">
+  <div class="tool">
     <div id="tag-filter" class="card-list">
-      <div class="dropdown grid-item dropdown-area">
+      <div class="dropdown-input">
         <input id="filter" type="text" />
         <select id="select-tag"></select>
       </div>
       <div class="tag-container" id="tag-container"> </div>
     </div>
     <div id="card-list" class="cardList">
-      <div class="card">card</div>
+      <div class="card card-sm">card</div>
     </div>
   </div>
 </body>

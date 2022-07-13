@@ -14,7 +14,7 @@
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      padding-top: 10em;
+      padding-top: 1em;
     }
 
     .vs {
@@ -56,16 +56,6 @@
       font-size: 3em;
     }
 
-    .contestSelect {
-        display: inline-block;
-        /* height: 30px; */
-        width: 150px;
-
-        border: solid 1px black;
-        color: black;
-        background-color: white;
-    }
-
     .button {
         border: solid 1px black;
         color: black;
@@ -103,8 +93,7 @@
       loading contest...
     </div>
     <div id="contest-control" class="contestControl">
-      <!-- <label for="contest-select">select contest: </label> -->
-      <select name="contest" class="contestSelect" id="contest-select"></select>
+      <select name="contest" class="dropdown" id="contest-select"></select>
       <button id="toggle-match" class="button">show ratings</button>
     </div>
     <div id="card-match">
@@ -128,7 +117,7 @@
 
   <div class="contest-creator">
     <input type="text" class="contest-name-input" id="contest-name">
-    <button class="contest-add-btn" id="add-contest"> Add Contest</button>
+    <button class="button" id="add-contest"> Add Contest</button>
   </div>
 </body>
 </html>

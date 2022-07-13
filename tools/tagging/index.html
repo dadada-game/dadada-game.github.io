@@ -3,7 +3,6 @@
 
 <head>
     <style>
-
         .cardMatch {
             display: flex;
             flex-direction: column;
@@ -12,39 +11,12 @@
             padding-top: 10em;
         }
 
-        .vs {
-            font-size: 5em;
-        }
-
-        .card {
-            cursor: pointer;
-        }
-
         .card img {
-            max-width: 40vmin;
+            max-width: 80%;
         }
 
         .hidden {
             display: none;
-        }
-
-        .dropdown {
-            position: relative;
-            width: 100px;
-        }
-
-        .dropdown select {
-            width: 100%;
-        }
-
-        .dropdown>* {
-            box-sizing: border-box;
-            height: 1.5em;
-        }
-
-        .dropdown input {
-            position: absolute;
-            width: calc(100% - 20px);
         }
 
         .card {
@@ -77,15 +49,8 @@
             padding: 20px 0;
         }
 
-        .card-tag {
-            text-align: left;
-        }
         .card-tag-text {
-            display: inline-block;
             width: 140px;
-        }
-        .card-tag-delete {
-            cursor: pointer;
         }
     </style>
 
@@ -104,7 +69,7 @@
         </div>
         <div>
             <label for="card-select">select card </label>
-            <select name="card" id="card-select"></select>
+            <select name="card" class="dropdown" id="card-select"></select>
         </div>
         <div id="card-edit" class="cardMatch grid-container">
             <div id="card" class="card grid-item">
@@ -114,12 +79,14 @@
                 <h3> tags </h3>
                 <p id="card-tags"></p>
             </div>
-            <div class="dropdown grid-item dropdown-area">
-                <!-- <div> -->
+            <div class="grid-item dropdown-area">
+                <div class="dropdown-input">
+                    <!-- <div> -->
                     <input id="tag-value" type="text" />
                     <select id="select-tag"></select>
-                <!-- </div> -->
-                <button id="submit" class="btn"> add </button>
+                    <!-- </div> -->
+                </div>
+                <button id="submit" class="button"> add </button>
             </div>
         </div>
     </div>
