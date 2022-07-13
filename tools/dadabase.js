@@ -97,14 +97,14 @@ class Dadabase {
     });
   }
 
-  async getAllCards(showArchived = false) {
+  async getAllCards() {
     const ref = collection(this.db, "cards").withConverter(cardConverter);
     const querySnapshot = await getDocs(ref);
     const cards = [];
     querySnapshot.forEach((doc) => {
       cards.push(doc.data());
     })
-    return cards.filter(c => !c.tags.has("archived"))
+    return cards
   }
 
   async updateCard(card){
@@ -113,6 +113,33 @@ class Dadabase {
       img:card.img,
       name:card.name
     });
+  }
+
+  async getAllTags() {
+    const querySnapshot = await getDoc(doc(this.db, "cardTags", "tags"));
+    const tags = querySnapshot.data().list;
+    return tags;
+  }
+
+  async addTag(tag) {
+    const tagRef = doc(this.db, "cardTags", "tags");
+    await updateDoc(tagRef, {
+        list: arrayUnion(tag)
+    })
+  }
+
+  async addTagToCard(card, tag) {
+    const cardRef = doc(this.db, "cards", card.id);
+    await updateDoc(cardRef, {
+        tags: arrayUnion(tag)
+    });
+  }
+
+  async removeCardTag(card, tag) {
+    const cardRef = doc(this.db, "cards", card.id);
+    await updateDoc(cardRef, {
+        tags: arrayRemove(tag)
+    })
   }
 }
 

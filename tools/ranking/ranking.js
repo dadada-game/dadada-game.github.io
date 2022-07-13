@@ -123,8 +123,10 @@ function RenderContestData(contest){
 
   const headers = {}
 
-  contest.cardRanks.sort((a, b) => ordinal(b.rating) - ordinal(a.rating))
-  for (let i in contest.cardRanks) {
+  const meaningfulRanks = contest
+    .cardRanks.filter(r => !allCards.find(c => r.id === c.id).tags.has("archived"))
+  meaningfulRanks.sort((a, b) => ordinal(b.rating) - ordinal(a.rating))
+  for (let i in meaningfulRanks) {
     const $row = document.createElement("tr");
     $row.classList.toggle("contest-row", true)
     $table.appendChild($row);
@@ -164,15 +166,16 @@ function RenderContestData(contest){
 
     const rating = contest.cardRanks[i].rating
     createTextCell("rating", ordinal(rating).toFixed(2))
-    // createTextCell("mu", rating.mu.toFixed(2))
-    // createTextCell("sigma", rating.sigma.toFixed(2))
+    createTextCell("rating mean", rating.mu.toFixed(2))
+    createTextCell("rating variance", rating.sigma.toFixed(2))
 
-    for(let c of contests.filter(c => c.cardRanks)) {
-      if(c.title === contest.title) continue
-      const r = c.cardRanks.find(r => r.id === card.id)
-      const value = (r && ordinal(r.rating).toFixed(2)) || "---"
-      createTextCell(`rating (${c.title})`, value)
-    }
+    // // for showing all the contests in a big table
+    // for(let c of contests.filter(c => c.cardRanks)) {
+    //   if(c.title === contest.title) continue
+    //   const r = c.cardRanks.find(r => r.id === card.id)
+    //   const value = (r && ordinal(r.rating).toFixed(2)) || "---"
+    //   createTextCell(`rating (${c.title})`, value)
+    // }
   }
 
   $currentContest.appendChild($table);

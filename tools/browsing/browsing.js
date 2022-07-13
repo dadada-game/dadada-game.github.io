@@ -44,7 +44,7 @@ function InitializeCards(cards) {
 }
 
 async function main() {
-  const cards = await ddb.getAllCards()
+  const cards = (await ddb.getAllCards()).filter(c => !c.tags.has("archived"))
   InitializeCards(cards)
 }
 main()

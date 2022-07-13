@@ -45,11 +45,13 @@ export class Contest {
       let id = -1
       const filteredUnseen = unseenCards
           .filter(c => except.find(e => e.id === c.id) == null) // don't repeat them
+          .filter(c => !c.tags.has("archived"))
       if (filteredUnseen.length > 0) {
         id = filteredUnseen[0].id
       } else {
         const filteredRanks = m.cardRanks
           .filter(c => except.find(e => e.id === c.id) == null) // don't repeat them
+          .filter(c => !allCards.find(ac => ac.id === c.id).tags.has("archived"))
 
         // if its not the first card, pick a random one
         if(except.length > 0) {
