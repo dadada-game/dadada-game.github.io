@@ -1,6 +1,7 @@
 import ddb from "../dadabase.js"
 
 const $cardImage = document.getElementById("card-img");
+const $topTitle = document.getElementById("top-title");
 const $dropdownCard = document.getElementById("card-select");
 $dropdownCard.addEventListener("change", event => {
     SetCurrentCard(allCards.find(c => c.name === $dropdownCard.value))
@@ -80,6 +81,7 @@ let currentCard = null;
 let allCards = null;
 
 function SetCurrentCard(card) {
+    $topTitle.innerText = "tagging - "+card.name
     $dropdownCard.value = card.name;
     window.location.hash = card.name
     currentCard = card
