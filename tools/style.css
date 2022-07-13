@@ -23,4 +23,9 @@ html, body {
 .title {
   font-size: 5em;
   align-items: center;
+  margin-bottom: 10px;
+}
+
+.container {
+  width: 80%;
 }

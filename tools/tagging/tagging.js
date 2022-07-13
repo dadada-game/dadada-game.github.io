@@ -1,7 +1,3 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js'
-import { collection, getFirestore, getDocs, doc, updateDoc, addDoc, getDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js'
-
-import Card from "../card.js"
 import ddb from "../dadabase.js"
 
 const $cardImage = document.getElementById("card-img");
@@ -82,6 +78,7 @@ async function TagCard(card, tag){
 let allTags = new Set();
 let currentCard = null;
 let allCards = null;
+
 function SetCurrentCard(card) {
     $dropdownCard.value = card.name;
     window.location.hash = card.name
@@ -91,7 +88,6 @@ function SetCurrentCard(card) {
 function RenderCardOptions(cards) {
     // render options
     const v = $dropdownCard.value
-    console.log(v)
 
     while($dropdownCard.lastChild) {
         $dropdownCard.removeChild($dropdownCard.lastChild)
